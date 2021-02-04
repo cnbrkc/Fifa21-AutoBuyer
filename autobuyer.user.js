@@ -2333,11 +2333,13 @@
                 let xhr = new XMLHttpRequest();
                 xhr.addEventListener('load', () => {
                     const futbinPlayerInfo = JSON.parse(`${xhr.response}`);
-                    const futbinSellPrice = parseInt(futbinPlayerInfo[player.resourceId].prices.ps.LCPrice.replace(',', ''), 10);
+                    const futbinSellPrice = parseInt(futbinPlayerInfo[player.resourceId].prices.pc.LCPrice.replace(',', ''), 10);
 
                     sellPrice = futbinSellPrice;
-                    if (futbinSellPrice === 0) {
+                    if (futbinSellPrice === 0 || futbinSellPrice <= price ) {
                         sellPrice = -1;
+                    }else if(futbinSellPrice < 1000 && futbinSellPrice > price){
+                        sellPrice = sellPrice + 50;
                     }
 
                     if (isBin) {
