@@ -100,6 +100,7 @@
         nameDeleteFilter = '#elem_' + makeid(15),
         nameAbSolveCaptcha = '#elem_' + makeid(15),
         nameSellAfterTax = '#elem_' + makeid(15),
+        nameBuyAfterTax = '#elem_' + makeid(15),
         nameAbSearchProgress = '#elem_' + makeid(15),
         nameAbStatisticsProgress = '#elem_' + makeid(15),
         nameAbRequestCount = '#elem_' + makeid(15),
@@ -411,16 +412,16 @@
 
     utils.JS.inherits(UTAutoBuyerViewController, UTMarketSearchFiltersViewController);
 
-    window.UTAutoBuyerViewController.prototype.init = function init() {
+     window.UTAutoBuyerViewController.prototype.init = function init() {
         if (!this.initialized) {
             //getAppMain().superclass(),
             this._viewmodel || (this._viewmodel = new viewmodels.BucketedItemSearch),
-            this._viewmodel.searchCriteria.type === enums.SearchType.ANY && (this._viewmodel.searchCriteria.type = enums.SearchType.PLAYER);
+                this._viewmodel.searchCriteria.type === enums.SearchType.ANY && (this._viewmodel.searchCriteria.type = enums.SearchType.PLAYER);
 
             _searchViewModel = this._viewmodel;
 
-            var t = gConfigurationModel.getConfigObject(models.ConfigurationModel.KEY_ITEMS_PER_PAGE)
-                , count = 1 + (utils.JS.isValid(t) ? t[models.ConfigurationModel.ITEMS_PER_PAGE.TRANSFER_MARKET] : 15);
+            var t = getAppMain().getConfigRepository().getConfigObject(EAConfigurationRepository.KEY_ITEMS_PER_PAGE)
+                , count = 1 + (utils.JS.isValid(t) ? t[EAConfigurationRepository.KEY_ITEMS_PER_PAGE] : 15);
             this._viewmodel.searchCriteria.count = count,
                 this._viewmodel.searchFeature = enums.ItemSearchFeature.MARKET;
             var view = this.getView();
@@ -431,10 +432,10 @@
                 view.addTarget(this, this._eMaxBidPriceChanged, UTMarketSearchFiltersView.Event.MAX_BID_PRICE_CHANGE),
                 view.addTarget(this, this._eMinBuyPriceChanged, UTMarketSearchFiltersView.Event.MIN_BUY_PRICE_CHANGE),
                 view.addTarget(this, this._eMaxBuyPriceChanged, UTMarketSearchFiltersView.Event.MAX_BUY_PRICE_CHANGE),
-            this._viewmodel.getCategoryTabVisible() && (view.initTabMenuComponent(),
-                view.getTabMenuComponent().addTarget(this, this._eSearchCategoryChanged, enums.Event.TAP)),
+                this._viewmodel.getCategoryTabVisible() && (view.initTabMenuComponent(),
+                    view.getTabMenuComponent().addTarget(this, this._eSearchCategoryChanged, EventType.TAP)),
                 this._squadContext ? isPhone() || view.addClass("narrow") : view.addClass("floating"),
-                view.getPlayerNameSearch().addTarget(this, this._ePlayerNameChanged, enums.Event.CHANGE),
+                view.getPlayerNameSearch().addTarget(this, this._ePlayerNameChanged, EventType.CHANGE),
                 view.__root.style = "width: 50%; float: left;";
         }
     };
@@ -571,7 +572,7 @@
         criteria.maxBuy = null;
 
         let allPrices = [];
-        let itemsToConsider = 5;
+        let itemsToConsider = 1;
         let isMinFound = false;
         let currentCount = 0;
         while (!isMinFound) {
@@ -709,11 +710,16 @@
 
                     jQuery('.ut-item-search-view').first().prepend(
                         '<div style="width:100%;display: flex;">' +
+                        '<div style="width:50%;margin-top: 1%;" class="button-container">' +
+                        '<button style="width:50%" class="btn-standard call-to-action" id="' + nameDeleteFilter.substring(1) + '">Delete Filter</button>' +
+                        '</div>' +
                         '<div class="button-container">' +
                         '<select id="' + nameFilterDropdown.substring(1) + '" name="filters" style="width:100%;padding: 10px;font-family: UltimateTeamCondensed,sans-serif;font-size: 1.6em;color: #e2dde2;text-transform: uppercase;background-color: #171826;"></select>' +
                         '</div>' +
                         '<div style="width:50%;margin-top: 1%;" class="button-container">' +
-                        '<button style="width:50%" class="btn-standard call-to-action" id="' + nameDeleteFilter.substring(1) + '">Delete Filter</button>' +
+                        '<button style="width:50%" class="btn-standard call-to-action" id="'  + nameCalcBinPrice.substring(1) + '">Calculate Buy Price</button>' +
+                        '</div>' +
+                        '<div style="width:50%;margin-top: 1%;" class="button-container">' +
                         '<button style="width:100%" class="btn-standard call-to-action" id="' + namePreserveChanges.substring(1) + '">Save Filter</button>' +
                         '</div> </div>');
                     jQuery('.search-prices').first().append(
@@ -725,7 +731,7 @@
                         '<div><br></div>' +
                         '<div class="price-filter">' +
                         '   <div class="info">' +
-                        '       <span class="secondary label">Buy Price:</span>' +
+                        '       <span class="secondary label">Sell Price:</span><br/><small>Receive After Tax: <span id="' + nameBuyAfterTax.substring(1) + '">0</span></small>' +
                         '   </div>' +
                         '   <div class="buttonInfo">' +
                         '       <div class="inputBox">' +
@@ -773,11 +779,6 @@
                         '           <input type="text" class="numericInput" id="' + nameAbItemExpiring.substring(1) + '" placeholder="1H">' +
                         '       </div>' +
                         '   </div>' +
-                        '</div>' +
-                        '<div class="price-filter">' +
-                        '<div class="button-container">' +
-                        '    <button class="btn-standard call-to-action" id="' + nameCalcBinPrice.substring(1) + '">Calculate Buy Price</button>' +
-                        '</div>' +
                         '</div>' +
                         '<div><br></div>' +
                         '<hr>' +
@@ -982,7 +983,6 @@
                         '<div class="search-price-header">' +
                         '   <h1 class="secondary">Captcha settings:</h1>' +
                         '</div>' +
-
                         '<div style="width: 100%;" class="price-filter">' +
                         '   <div style="padding : 22px" class="ut-toggle-cell-view">' +
                         '       <span class="ut-toggle-cell-view--label">Close Web App on Captcha Trigger</span>' +
@@ -1600,6 +1600,9 @@
     jQuery(document).on('keyup', nameAbSellPrice, function () {
         jQuery(nameSellAfterTax).html((jQuery(nameAbSellPrice).val() - ((parseInt(jQuery(nameAbSellPrice).val()) / 100) * 5)).toLocaleString());
     });
+    jQuery(document).on('keyup', nameAbBuyPrice, function () {
+        jQuery(nameBuyAfterTax).html((jQuery(nameAbBuyPrice).val() - ((parseInt(jQuery(nameAbBuyPrice).val()) / 100) * 5)).toLocaleString());
+    });
 
     window.updateAutoTransferListStat = function () {
         if (!window.autoBuyerActive) {
@@ -1706,9 +1709,9 @@
     window.getItemName = function (itemObj) {
         return window.format_string(itemObj._staticData.name, 15);
     };
-    window.getProfitMargin = function () {
-        return parseInt(document.querySelector(nameAbProfitMargin).value, 10) / 100.0;
-    }
+     window.getProfitMargin = function () {
+         return parseInt(document.querySelector(nameAbProfitMargin).value, 10) / 100.0;
+     }
     window.winCount = 0;
     window.lossCount = 0;
     window.bidCount = 0;
@@ -2333,19 +2336,19 @@
                 let xhr = new XMLHttpRequest();
                 xhr.addEventListener('load', () => {
                     const futbinPlayerInfo = JSON.parse(`${xhr.response}`);
-                    const futbinSellPrice = parseInt(futbinPlayerInfo[player.resourceId].prices.pc.LCPrice.replace(',', ''), 10);
+                    const futbinSellPrice = parseInt(futbinPlayerInfo[player.resourceId].prices.ps.LCPrice.replace(',', ''), 10);
 
                     sellPrice = futbinSellPrice;
                     if (futbinSellPrice === 0 || futbinSellPrice <= price ) {
                         sellPrice = -1;
                     }else if(futbinSellPrice < 1000 && futbinSellPrice > price){
-                        sellPrice = sellPrice + 50;
+                        sellPrice = sellPrice;
                     }
 
                     if (isBin) {
                         window.purchasedCardCount++;
                     }
-    
+
                     if (isBin && sellPrice !== 0 && !isNaN(sellPrice)) {
                         window.winCount++;
                         let sym = " W:" + window.format_string(window.winCount.toString(), 4);
@@ -2358,23 +2361,23 @@
                         window.bidCount++;
                         services.Item.move(player, enums.FUTItemPile.CLUB).observe(this, (function (sender, moveResponse) {
                             let sym = " B:" + window.format_string(window.bidCount.toString(), 4);
-                            writeToLog(sym + " | " + player_name + ' | ' + price_txt + ((isBin) ? ' | buy | success | move to club' : ' | bid | success | waiting to expire'));
-                        }));
+                             writeToLog(sym + " | " + player_name + ' | ' + price_txt + ((isBin) ? ' | buy | success | move to club' : ' | bid | success | waiting to expire'));
+                       }));
                     }
-    
                     if (jQuery(nameTelegramBuy).val() == 'B' || jQuery(nameTelegramBuy).val() == 'A') {
                         window.sendNotificationToUser("| " + player_name.trim() + ' | ' + price_txt.trim() + ' | buy |');
                     }
                 });
                 xhr.open('GET', `https://www.futbin.com/21/playerPrices?player=${player.resourceId}`);
                 xhr.send();
-            } else {
+               } else {
                 window.lossCount++;
                 let sym = " L:" + window.format_string(window.lossCount.toString(), 4);
                 writeToLog(sym + " | " + player_name + ' | ' + price_txt + ((isBin) ? ' | buy | failure |' : ' | bid | failure |') + ' ERR: ' + data.status + '-' + (errorCodeLookUpShort[data.status] || ''));
                 if (jQuery(nameTelegramBuy).val() == 'L' || jQuery(nameTelegramBuy).val() == 'A') {
                     window.sendNotificationToUser("| " + player_name.trim() + ' | ' + price_txt.trim() + ' | failure |');
                 }
+
 
                 if (jQuery(nameAbStopErrorCode).val()) {
                     var errorCodes = jQuery(nameAbStopErrorCode).val().split(",");
