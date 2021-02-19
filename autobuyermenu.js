@@ -2345,33 +2345,31 @@
                         sellPrice = sellPrice;
                     }
 
-                     if (isBin) {
-                         window.purchasedCardCount++;
-                     }
+                    if (isBin) {
+                        window.purchasedCardCount++;
+                    }
 
-                     if (isBin && sellPrice !== 0 && !isNaN(sellPrice)) {
-                         window.winCount++;
-                         let sym = " W:" + window.format_string(window.winCount.toString(), 4);
-                         writeToLog(sym + " | " + player_name + ' | ' + price_txt + ((isBin) ? ' | buy | success | selling for: ' + sellPrice : ' | bid | success |' + ' selling for: ' + sellPrice));
-                         window.play_audio('card_won');
-                         window.sellRequestTimeout = window.setTimeout(function () {
-                             services.Item.list(player, window.getSellBidPrice(sellPrice), sellPrice, 3600);
-                         }, window.getRandomWait());
-                     } else {
-                         window.bidCount++;
-                         services.Item.move(player, enums.FUTItemPile.CLUB).observe(this, (function (sender, moveResponse) {
-                             let sym = " B:" + window.format_string(window.bidCount.toString(), 4);
-                            writeToLog(sym + " | " + player_name + ' | ' + price_txt + ((isBin) ? ' | buy | success | move to club' : ' | bid | success | waiting to expire'));
-                         }));
-                     }
-
-                     if (jQuery(nameTelegramBuy).val() == 'B' || jQuery(nameTelegramBuy).val() == 'A') {
-                         window.sendNotificationToUser("| " + player_name.trim() + ' | ' + price_txt.trim() + ' | buy |');
-                     }
-                 });
-                 xhr.open('GET', `https://www.futbin.com/21/playerPrices?player=${player.resourceId}`);
-                 xhr.send();
-
+                    if (isBin && sellPrice !== 0 && !isNaN(sellPrice)) {
+                        window.winCount++;
+                        let sym = " W:" + window.format_string(window.winCount.toString(), 4);
+                        writeToLog(sym + " | " + player_name + ' | ' + price_txt + ((isBin) ? ' | buy | success | selling for: ' + sellPrice : ' | bid | success |' + ' selling for: ' + sellPrice));
+                        window.play_audio('card_won');
+                        window.sellRequestTimeout = window.setTimeout(function () {
+                            services.Item.list(player, window.getSellBidPrice(sellPrice), sellPrice, 3600);
+                        }, window.getRandomWait());
+                    } else {
+                        window.bidCount++;
+                        services.Item.move(player, enums.FUTItemPile.CLUB).observe(this, (function (sender, moveResponse) {
+                            let sym = " B:" + window.format_string(window.bidCount.toString(), 4);
+                             writeToLog(sym + " | " + player_name + ' | ' + price_txt + ((isBin) ? ' | buy | success | move to club' : ' | bid | success | waiting to expire'));
+                       }));
+                    }
+                    if (jQuery(nameTelegramBuy).val() == 'B' || jQuery(nameTelegramBuy).val() == 'A') {
+                        window.sendNotificationToUser("| " + player_name.trim() + ' | ' + price_txt.trim() + ' | buy |');
+                    }
+                });
+                xhr.open('GET', `https://www.futbin.com/21/playerPrices?player=${player.resourceId}`);
+                xhr.send();
                } else {
                 window.lossCount++;
                 let sym = " L:" + window.format_string(window.lossCount.toString(), 4);
@@ -2379,6 +2377,7 @@
                 if (jQuery(nameTelegramBuy).val() == 'L' || jQuery(nameTelegramBuy).val() == 'A') {
                     window.sendNotificationToUser("| " + player_name.trim() + ' | ' + price_txt.trim() + ' | failure |');
                 }
+
 
                 if (jQuery(nameAbStopErrorCode).val()) {
                     var errorCodes = jQuery(nameAbStopErrorCode).val().split(",");
